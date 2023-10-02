@@ -109,6 +109,11 @@ set_opcode_str(const char *opcode_str)
         return OPCODE_HALT;
     }
 
+    if (strcmp(opcode_str, "LOADP") == 0)
+    {
+        return OPCODE_LOADP;
+    }
+
     assert(0 && "Invalid opcode");
     return 0;
 }
@@ -183,6 +188,14 @@ create_APEX_instruction(APEX_Instruction *ins, char *buffer)
         }
 
         case OPCODE_LOAD:
+        {
+            ins->rd = get_num_from_string(tokens[0]);
+            ins->rs1 = get_num_from_string(tokens[1]);
+            ins->imm = get_num_from_string(tokens[2]);
+            break;
+        }
+
+        case OPCODE_LOADP:
         {
             ins->rd = get_num_from_string(tokens[0]);
             ins->rs1 = get_num_from_string(tokens[1]);

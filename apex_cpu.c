@@ -54,6 +54,14 @@ print_instruction(const CPU_Stage *stage)
             break;
         }
 
+        case OPCODE_LOADP:
+        {
+            printf("%s,R%d,R%d,#%d ", stage->opcode_str, stage->rd, stage->rs1,
+                stage->imm);
+            break;
+        }
+
+
         case OPCODE_STORE:
         {
             printf("%s,R%d,R%d,#%d ", stage->opcode_str, stage->rs1, stage->rs2,
@@ -73,6 +81,7 @@ print_instruction(const CPU_Stage *stage)
             printf("%s", stage->opcode_str);
             break;
         }
+
     }
 }
 
@@ -135,6 +144,7 @@ APEX_fetch(APEX_CPU *cpu)
             return;
         }
 
+
         /* Store current PC in fetch latch */
         cpu->fetch.pc = cpu->pc;
 
@@ -157,6 +167,10 @@ APEX_fetch(APEX_CPU *cpu)
         if (ENABLE_DEBUG_MESSAGES)
         {
             print_stage_content("Fetch", &cpu->fetch);
+        }
+
+        if (cpu->fetch.opcode == OPCODE_MOVC)
+        {
         }
 
         /* Stop fetching new instructions if HALT is fetched */
@@ -190,6 +204,15 @@ APEX_decode(APEX_CPU *cpu)
             case OPCODE_LOAD:
             {
                 cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                printf("hi");
+                // cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
+                break;
+            }
+
+            case OPCODE_LOADP:
+            {
+                cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                cpu->decode.rd_value = cpu->regs[cpu->decode.rd];
                 break;
             }
 
@@ -243,10 +266,19 @@ APEX_execute(APEX_CPU *cpu)
 
             case OPCODE_LOAD:
             {
-                cpu->execute.memory_address
-                    = cpu->execute.rs1_value + cpu->execute.imm;
+                cpu->execute.memory_address = cpu->execute.rs1_value + cpu->execute.imm;
+                printf("%d",cpu->execute.memory_address);
                 break;
             }
+
+            case OPCODE_LOADP:
+            {
+                /* Calculate the memory address by adding rs1_value and rs2_value */
+                cpu->execute.memory_address = cpu->execute.rs1_value + cpu->execute.imm;
+                cpu->execute.rd = cpu->execute.rd_value + 4 ;
+                break;
+            }
+
 
             case OPCODE_BZ:
             {
@@ -339,6 +371,15 @@ APEX_memory(APEX_CPU *cpu)
                 /* Read from data memory */
                 cpu->memory.result_buffer
                     = cpu->data_memory[cpu->memory.memory_address];
+                printf("%d",cpu->memory.result_buffer);
+                break;
+            }
+            case OPCODE_LOADP:
+            {
+                /* Read from data memory */
+                cpu->memory.result_buffer
+                    = cpu->data_memory[cpu->memory.memory_address];
+                // printf("%d",cpu->memory.result_buffer);
                 break;
             }
         }
@@ -374,6 +415,12 @@ APEX_writeback(APEX_CPU *cpu)
             }
 
             case OPCODE_LOAD:
+            {
+                cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
+                break;
+            }
+
+            case OPCODE_LOADP:
             {
                 cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
                 break;

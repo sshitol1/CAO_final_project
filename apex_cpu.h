@@ -20,6 +20,7 @@ typedef struct APEX_Instruction
     int rs1;
     int rs2;
     int imm;
+    int is_lit;    //flag to identify if the operand is literal or not
 } APEX_Instruction;
 
 /* Model of CPU stage latch */
@@ -32,12 +33,20 @@ typedef struct CPU_Stage
     int rs2;
     int rd;
     int imm;
+    int is_lit;
     int rs1_value;
     int rs2_value;
+    int rd_value;
     int result_buffer;
     int memory_address;
     int has_insn;
 } CPU_Stage;
+
+typedef struct APEX_Reg_Status 
+{
+    int value;
+    int status; // 0 means available, 1 means being used
+} APEX_Reg_Status;
 
 /* Model of APEX CPU */
 typedef struct APEX_CPU
@@ -47,6 +56,7 @@ typedef struct APEX_CPU
     int insn_completed;            /* Instructions retired */
     int regs[REG_FILE_SIZE];       /* Integer register file */
     int code_memory_size;          /* Number of instruction in the input file */
+    APEX_Reg_Status register_status[REG_FILE_SIZE]; // Status of registers
     APEX_Instruction *code_memory; /* Code Memory */
     int data_memory[DATA_MEMORY_SIZE]; /* Data Memory */
     int single_step;               /* Wait for user input after every cycle */
