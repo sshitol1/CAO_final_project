@@ -209,6 +209,15 @@ APEX_decode(APEX_CPU *cpu)
                 break;
             }
 
+            case OPCODE_STORE:
+            {
+                cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
+                printf("%d",cpu->decode.rs1_value);
+                printf("%d",cpu->decode.rs2_value);
+                break;
+            }
+
             case OPCODE_LOADP:
             {
                 cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
@@ -276,6 +285,15 @@ APEX_execute(APEX_CPU *cpu)
                 /* Calculate the memory address by adding rs1_value and rs2_value */
                 cpu->execute.memory_address = cpu->execute.rs1_value + cpu->execute.imm;
                 cpu->execute.rd = cpu->execute.rd_value + 4 ;
+                break;
+            }
+            
+            case OPCODE_STORE:
+            {
+                cpu->execute.memory_address = cpu->execute.rs1_value + cpu->execute.imm;
+                cpu->execute.result_buffer = cpu->execute.rs2_value;
+                printf("%d",cpu->execute.result_buffer);
+                printf("%d",cpu->execute.memory_address);
                 break;
             }
 
@@ -382,6 +400,14 @@ APEX_memory(APEX_CPU *cpu)
                 // printf("%d",cpu->memory.result_buffer);
                 break;
             }
+
+            case OPCODE_STORE:
+            {
+                /* Write to data memory */
+                cpu->data_memory[cpu->memory.memory_address] = cpu->memory.result_buffer;
+                break;
+            }
+
         }
 
         /* Copy data from memory latch to writeback latch*/

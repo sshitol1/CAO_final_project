@@ -21,6 +21,7 @@ typedef struct APEX_Instruction
     int rs2;
     int imm;
     int is_lit;    //flag to identify if the operand is literal or not
+    int is_store;  // flag to show store command
 } APEX_Instruction;
 
 /* Model of CPU stage latch */
@@ -40,6 +41,7 @@ typedef struct CPU_Stage
     int result_buffer;
     int memory_address;
     int has_insn;
+    int data_of_store;
 } CPU_Stage;
 
 typedef struct APEX_Reg_Status 
