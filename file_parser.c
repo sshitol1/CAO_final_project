@@ -94,6 +94,11 @@ set_opcode_str(const char *opcode_str)
         return OPCODE_STORE;
     }
 
+    if (strcmp(opcode_str, "STOREP") == 0)
+    {
+        return OPCODE_STOREP;
+    }
+
     if (strcmp(opcode_str, "BZ") == 0)
     {
         return OPCODE_BZ;
@@ -204,6 +209,7 @@ create_APEX_instruction(APEX_Instruction *ins, char *buffer)
         }
 
         case OPCODE_STORE:
+        case OPCODE_STOREP:
         {
             ins->rs1 = get_num_from_string(tokens[0]);
             ins->rs2 = get_num_from_string(tokens[1]);

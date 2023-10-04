@@ -33,7 +33,9 @@
 #define OPCODE_BNZ 0xb
 #define OPCODE_HALT 0xc
 #define OPCODE_LOADP 0xd       //opcode for loadp
-
+#define OPCODE_STOREP 0xe      //opcode for storep
+#define OPCODE_ADDL 0xf        //opcode for add l
+#define OPCODE_SUBL 0x10       //opcode for sub l 
 /* Set this flag to 1 to enable debug messages */
 #define ENABLE_DEBUG_MESSAGES 1
 

@@ -69,6 +69,14 @@ print_instruction(const CPU_Stage *stage)
             break;
         }
 
+        case OPCODE_STOREP:
+        {
+            printf("%s,R%d,R%d,#%d ", stage->opcode_str, stage->rs1, stage->rs2,
+                   stage->imm);
+            break;
+        }
+
+
         case OPCODE_BZ:
         case OPCODE_BNZ:
         {
@@ -195,6 +203,22 @@ APEX_decode(APEX_CPU *cpu)
         switch (cpu->decode.opcode)
         {
             case OPCODE_ADD:
+            case OPCODE_ADDL:
+            {
+                cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
+                break;
+            }
+
+            case OPCODE_SUB:
+            case OPCODE_SUBL:
+            {
+                cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
+                break;
+            }
+
+            case OPCODE_MUL:
             {
                 cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
                 cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
@@ -215,6 +239,15 @@ APEX_decode(APEX_CPU *cpu)
                 cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
                 printf("%d",cpu->decode.rs1_value);
                 printf("%d",cpu->decode.rs2_value);
+                break;
+            }
+
+            case OPCODE_STOREP:
+            {
+                cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
+                cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
+                // printf("%d",cpu->decode.rs1_value);
+                // printf("%d",cpu->decode.rs2_value);
                 break;
             }
 
@@ -257,6 +290,7 @@ APEX_execute(APEX_CPU *cpu)
         switch (cpu->execute.opcode)
         {
             case OPCODE_ADD:
+            case OPCODE_ADDL:
             {
                 cpu->execute.result_buffer
                     = cpu->execute.rs1_value + cpu->execute.rs2_value;
@@ -270,6 +304,31 @@ APEX_execute(APEX_CPU *cpu)
                 {
                     cpu->zero_flag = FALSE;
                 }
+                break;
+            }
+            
+            case OPCODE_SUB:
+            case OPCODE_SUBL:
+            {
+                cpu->execute.result_buffer
+                    = cpu->execute.rs1_value - cpu->execute.rs2_value;
+
+                /* Set the zero flag based on the result buffer */
+                if (cpu->execute.result_buffer == 0)
+                {
+                    cpu->zero_flag = TRUE;
+                } 
+                else 
+                {
+                    cpu->zero_flag = FALSE;
+                }
+                break;
+            }
+
+            case OPCODE_MUL:
+            {
+                cpu->execute.result_buffer
+                    = cpu->execute.rs1_value - cpu->execute.rs2_value;
                 break;
             }
 
@@ -294,6 +353,15 @@ APEX_execute(APEX_CPU *cpu)
                 cpu->execute.result_buffer = cpu->execute.rs2_value;
                 printf("%d",cpu->execute.result_buffer);
                 printf("%d",cpu->execute.memory_address);
+                break;
+            }
+
+            case OPCODE_STOREP:
+            {
+                cpu->execute.memory_address = cpu->execute.rs1_value + cpu->execute.imm;
+                cpu->execute.result_buffer = cpu->execute.rs2_value;
+                // printf("%d",cpu->execute.result_buffer);
+                // printf("%d",cpu->execute.memory_address);
                 break;
             }
 
@@ -408,6 +476,15 @@ APEX_memory(APEX_CPU *cpu)
                 break;
             }
 
+            case OPCODE_STOREP:
+            {
+                int data_to_store = cpu->memory.result_buffer;
+
+                cpu->data_memory[cpu->memory.memory_address] = data_to_store;
+                break;
+            }
+
+
         }
 
         /* Copy data from memory latch to writeback latch*/
@@ -435,6 +512,18 @@ APEX_writeback(APEX_CPU *cpu)
         switch (cpu->writeback.opcode)
         {
             case OPCODE_ADD:
+            {
+                cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
+                break;
+            }
+
+            case OPCODE_SUB:
+            {
+                cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
+                break;
+            }
+
+            case OPCODE_MUL:
             {
                 cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
                 break;
