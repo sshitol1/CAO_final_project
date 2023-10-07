@@ -38,6 +38,12 @@
 #define OPCODE_SUBL 0x10       //opcode for sub l
 #define OPCODE_CMP 0X11        //opcode for cmp 
 #define OPCODE_JUMP 0x12       //opcode for jump
+#define OPCODE_JALR 0x13       //opcode for jalr
+#define OPCODE_CML 0X14        ////opcode for cml
+#define OPCODE_BP 0x15         // opcode for BP
+#define OPCODE_BNP 0x16        //opcode for BNP
+#define OPCODE_BN 0x17         // opcode for BN
+#define OPCODE_BNN 0x18         // opcode for BNN
 /* Set this flag to 1 to enable debug messages */
 #define ENABLE_DEBUG_MESSAGES 1
 

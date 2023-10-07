@@ -124,6 +124,26 @@ set_opcode_str(const char *opcode_str)
         return OPCODE_BNZ;
     }
 
+    if (strcmp(opcode_str, "BP") == 0)
+    {
+        return OPCODE_BP;
+    }
+
+    if (strcmp(opcode_str, "BNP") == 0)
+    {
+        return OPCODE_BNP;
+    }
+
+    if (strcmp(opcode_str, "BN") == 0)
+    {
+        return OPCODE_BN;
+    }
+
+    if (strcmp(opcode_str, "BNN") == 0)
+    {
+        return OPCODE_BNN;
+    }
+
     if (strcmp(opcode_str, "HALT") == 0)
     {
         return OPCODE_HALT;
@@ -137,6 +157,16 @@ set_opcode_str(const char *opcode_str)
     if (strcmp(opcode_str, "JUMP") == 0)
     {
         return OPCODE_JUMP;
+    }
+
+    if (strcmp(opcode_str, "JALR") == 0)
+    {
+        return OPCODE_JALR;
+    }
+
+    if (strcmp(opcode_str, "CML") == 0)
+    {
+        return OPCODE_CML;
     }
 
     assert(0 && "Invalid opcode");
@@ -221,6 +251,13 @@ create_APEX_instruction(APEX_Instruction *ins, char *buffer)
             break;
         }
 
+        case OPCODE_CML:
+        {
+            ins->rs1 = get_num_from_string(tokens[0]);
+            ins->imm = get_num_from_string(tokens[1]);
+            break;
+        }
+
         case OPCODE_MOVC:
         {
             ins->rd = get_num_from_string(tokens[0]);
@@ -255,6 +292,10 @@ create_APEX_instruction(APEX_Instruction *ins, char *buffer)
 
         case OPCODE_BZ:
         case OPCODE_BNZ:
+        case OPCODE_BP:
+        case OPCODE_BNP:
+        case OPCODE_BN:
+        case OPCODE_BNN:
         {
             ins->imm = get_num_from_string(tokens[0]);
             break;
@@ -264,6 +305,14 @@ create_APEX_instruction(APEX_Instruction *ins, char *buffer)
         {
             ins->rs1 = get_num_from_string(tokens[0]);
             ins->imm = get_num_from_string(tokens[1]);
+            break;
+        }
+
+        case OPCODE_JALR:
+        {
+            ins->rd = get_num_from_string(tokens[0]);
+            ins->rs1 = get_num_from_string(tokens[1]);
+            ins->imm = get_num_from_string(tokens[2]);
             break;
         }
 
