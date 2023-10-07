@@ -94,6 +94,12 @@ print_instruction(const CPU_Stage *stage)
             break;
         }
 
+        case OPCODE_NOP:
+        {
+            printf("%s", stage->opcode_str);
+            break;
+        }
+
         case OPCODE_ADDL:
         case OPCODE_SUBL:
         {
@@ -214,14 +220,15 @@ APEX_fetch(APEX_CPU *cpu)
             print_stage_content("Fetch", &cpu->fetch);
         }
 
-        if (cpu->fetch.opcode == OPCODE_MOVC)
-        {
-        }
-
         /* Stop fetching new instructions if HALT is fetched */
         if (cpu->fetch.opcode == OPCODE_HALT)
         {
             cpu->fetch.has_insn = FALSE;
+        }
+
+        if (cpu->fetch.opcode == OPCODE_NOP)
+        {
+            cpu->decode.has_insn = FALSE;
         }
     }
 }
@@ -257,6 +264,7 @@ APEX_decode(APEX_CPU *cpu)
 
             case OPCODE_OR:
             case OPCODE_XOR:
+            case OPCODE_AND:
             {
                 cpu->decode.rs1_value = cpu->regs[cpu->decode.rs1];
                 cpu->decode.rs2_value = cpu->regs[cpu->decode.rs2];
@@ -694,6 +702,22 @@ APEX_execute(APEX_CPU *cpu)
                 cpu->execute.result_buffer = cpu->execute.rs1_value ^ cpu->execute.rs2_value;
                 break;
             }
+
+            case OPCODE_AND:
+            {
+                cpu->execute.result_buffer = cpu->execute.rs1_value & cpu->execute.rs2_value;
+
+                /* Set the zero flag based on the result buffer */
+                if (cpu->execute.result_buffer == 0)
+                {
+                    cpu->zero_flag = TRUE;
+                } 
+                else 
+                {
+                    cpu->zero_flag = FALSE;
+                }
+                break;
+            }
         }
 
         /* Copy data from execute latch to memory latch*/
@@ -830,6 +854,12 @@ APEX_writeback(APEX_CPU *cpu)
             }
 
             case OPCODE_JALR:
+            {
+                cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
+                break;
+            }
+
+            case OPCODE_AND:
             {
                 cpu->regs[cpu->writeback.rd] = cpu->writeback.result_buffer;
                 break;

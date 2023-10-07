@@ -43,7 +43,8 @@
 #define OPCODE_BP 0x15         // opcode for BP
 #define OPCODE_BNP 0x16        //opcode for BNP
 #define OPCODE_BN 0x17         // opcode for BN
-#define OPCODE_BNN 0x18         // opcode for BNN
+#define OPCODE_BNN 0x18        // opcode for BNN
+#define OPCODE_NOP 0x19        // opcode for NOP
 /* Set this flag to 1 to enable debug messages */
 #define ENABLE_DEBUG_MESSAGES 1
 
