@@ -22,6 +22,7 @@ typedef struct APEX_Instruction
     int imm;
     int is_lit;    //flag to identify if the operand is literal or not
     int is_store;  // flag to show store command
+    int stall;
 } APEX_Instruction;
 
 /* Model of CPU stage latch */
@@ -42,12 +43,14 @@ typedef struct CPU_Stage
     int memory_address;
     int has_insn;
     int data_of_store;
+    int stall;
 } CPU_Stage;
 
 typedef struct APEX_Reg_Status 
 {
     int value;
     int status; // 0 means available, 1 means being used
+    int valid;
 } APEX_Reg_Status;
 
 /* Model of APEX CPU */
@@ -80,4 +83,5 @@ APEX_Instruction *create_code_memory(const char *filename, int *size);
 APEX_CPU *APEX_cpu_init(const char *filename);
 void APEX_cpu_run(APEX_CPU *cpu);
 void APEX_cpu_stop(APEX_CPU *cpu);
+void stall_handling(APEX_CPU *cpu);
 #endif
