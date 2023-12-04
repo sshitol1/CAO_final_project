@@ -18,6 +18,7 @@
 /* Size of integer register file */
 #define REG_FILE_SIZE 16
 
+#define Op_QUEUE_SIZE 16
 /* Numeric OPCODE identifiers for instructions */
 #define OPCODE_ADD 0x0
 #define OPCODE_SUB 0x1

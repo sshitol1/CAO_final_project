@@ -13,6 +13,7 @@
 #include "apex_cpu.h"
 #include "apex_macros.h"
 
+int oq_ind,entryIndex;
 /* Converts the PC(4000 series) into array index for code memory
  *
  * Note: You are not supposed to edit this function
@@ -173,6 +174,98 @@ print_reg_file(const APEX_CPU *cpu)
 
     printf("\n");
 }
+
+/* Definition of check_oq_entry function */
+int check_op_queue_entry(APEX_CPU* cpu) {
+    for (int oq_ind = 0; index < Op_QUEUE_SIZE; oq_ind++) {
+        if (!cpu->op_queue.entries[oq_ind].is_valid) {
+            cpu->op_queue.next_free_index = index;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int add_op_queue_entry(APEX_CPU* cpu, OpQueueEntry* newOpEntry) {
+    // Check if there is a free entry in the OpQueue
+    if (cpu->op_queue.next_free_index < Op_QUEUE_SIZE) {
+        int entryIndex = cpu->op_queue.next_free_index;
+
+        cpu->op_queue.entries[entryIndex].program_counter = newOpEntry->program_counter;
+        cpu->op_queue.entries[entryIndex].is_valid = newOpEntry->is_valid;
+        cpu->op_queue.entries[entryIndex].functional_unit_type = newOpEntry->functional_unit_type;
+        cpu->op_queue.entries[entryIndex].immediate_value = newOpEntry->immediate_value;
+        cpu->op_queue.entries[entryIndex].source1_ready = newOpEntry->source1_ready;
+        cpu->op_queue.entries[entryIndex].source1_register = newOpEntry->source1_register;
+        cpu->op_queue.entries[entryIndex].source1_value = newOpEntry->source1_value;
+        cpu->op_queue.entries[entryIndex].source2_ready = newOpEntry->source2_ready;
+        cpu->op_queue.entries[entryIndex].source2_register = newOpEntry->source2_register;
+        cpu->op_queue.entries[entryIndex].source2_value = newOpEntry->source2_value;
+        cpu->op_queue.entries[entryIndex].destination_register = newOpEntry->destination_register;
+        cpu->op_queue.entries[entryIndex].load_store_queue_index = newOpEntry->load_store_queue_index;
+
+        // Update the index for the next free entry in the OpQueue
+        cpu->op_queue.next_free_index++;
+        return 0;
+    }
+    return -1; // OpQueue is full
+}
+
+int is_op_queue_entry_valid(APEX_CPU* cpu, int numEntries)
+{
+    for (int i = 0; i < numEntries; i++)
+    {
+        if (cpu->op_queue.entries[i].is_valid && 
+            cpu->op_queue.entries[i].source1_ready && 
+            cpu->op_queue.entries[i].source2_ready)
+        {
+            update_instruction(cpu, i);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// void update_instruction(APEX_CPU* cpu, int index)
+// {
+//     // Assuming 'execute' is the next stage after issue/operation queue
+//     cpu->execute.rs1_value = cpu->op_queue.entries[index].source1_value;
+//     cpu->execute.rs2_value = cpu->op_queue.entries[index].source2_value;
+
+//     // Assuming destination register and functional unit type are also needed
+//     cpu->execute.rd = cpu->op_queue.entries[index].destination_register;
+
+//     // You can also copy other necessary fields from the OpQueue entry to the execute stage
+// }
+int update_instruction(APEX_CPU* cpu, int index) {
+    // Check if the index is within the bounds of the issue queue
+    if (index < 0 || index >= Op_QUEUE_SIZE) {
+        // Handle the error case, such as logging an error or returning an error code
+        return -1;
+    }
+
+    // Access the issue queue entry
+    OpQueueEntry* iq_entry = &cpu->op_queue.entries[index];
+
+    // Check if the issue queue entry is valid
+    if (!iq_entry->is_valid) {
+        // The entry is not valid; handle this case appropriately
+        return -1;
+    }
+
+    // Update the execute stage with the source registers and their values from the issue queue entry
+    cpu->execute.rs1 = iq_entry->source1_register;
+    cpu->execute.rs2 = iq_entry->source2_register;
+    cpu->execute.rs1_value = iq_entry->source1_value;
+    cpu->execute.rs2_value = iq_entry->source2_value;
+
+    // Assuming destination register and functional unit type are also needed
+    cpu->execute.rd = cpu->op_queue.entries[index].destination_register;
+
+
+    return 0;
+}
+
 
 /*
  * Fetch Stage of APEX Pipeline

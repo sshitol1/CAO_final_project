@@ -46,6 +46,29 @@ typedef struct CPU_Stage
     int stall;
 } CPU_Stage;
 
+typedef struct OpQueueEntry
+{
+    int program_counter;
+    int is_valid;             // Indicates if the entry is valid
+    int functional_unit_type; // Type of functional unit needed
+    int immediate_value;      // Immediate value for the instruction
+    int source1_ready;        // Flag indicating if source1 is ready
+    int source1_register;     // Source1 register ID
+    int source1_value;        // Source1 value
+    int source2_ready;        // Flag indicating if source2 is ready
+    int source2_register;     // Source2 register ID
+    int source2_value;        // Source2 value
+    int destination_register; // Destination register ID
+    int load_store_queue_index; // Index in the Load Store Queue (if applicable)
+    // Additional fields as needed
+} OpQueueEntry;
+
+typedef struct OpQueue
+{
+    OpQueueEntry entries[Op_QUEUE_SIZE];
+    int next_free_index; // Index of the next free entry in the queue
+} OpQueue;
+
 typedef struct APEX_Reg_Status 
 {
     int value;
@@ -70,6 +93,7 @@ typedef struct APEX_CPU
     int neg_flag;
     int cc;                        
     int fetch_from_next_cycle;
+    OpQueue op_queue;
 
     /* Pipeline stages */
     CPU_Stage fetch;
