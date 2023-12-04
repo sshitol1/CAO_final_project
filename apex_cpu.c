@@ -437,6 +437,17 @@ APEX_decode(APEX_CPU *cpu)
             }
         }
 
+        if(check_op_queue_entry(cpu)){
+            OpQueueEntry* opqf = malloc(sizeof(*opqf));
+
+            add_op_queue_entry(cpu,opqf);
+
+            cpu->decode.has_insn = FALSE;
+        }
+        else{
+            cpu->stall;
+        }
+
         /* Copy data from decode latch to execute latch*/
         cpu->execute = cpu->decode;
         cpu->decode.has_insn = FALSE;

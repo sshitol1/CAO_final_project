@@ -93,6 +93,7 @@ typedef struct APEX_CPU
     int neg_flag;
     int cc;                        
     int fetch_from_next_cycle;
+    int stall;
     OpQueue op_queue;
 
     /* Pipeline stages */
