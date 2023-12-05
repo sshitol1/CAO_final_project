@@ -186,6 +186,27 @@ int check_op_queue_entry(APEX_CPU* cpu) {
     return 0;
 }
 
+/* Function to Initialize Operation Queue */
+void initialize_issue_queue(APEX_CPU *cpu) {
+    cpu->op_queue.next_free_index = 0;  // Reset the index of the next free entry
+
+    for (int i = 0; i < Op_QUEUE_SIZE; i++) {
+        cpu->op_queue.entries[i].program_counter = -1;  // Default value for PC
+        cpu->op_queue.entries[i].is_valid = 0;          // 0 indicating invalid/unused entry
+        cpu->op_queue.entries[i].functional_unit_type = 0;  // Default functional unit type
+        cpu->op_queue.entries[i].immediate_value = 0;       // Default immediate value
+        cpu->op_queue.entries[i].source1_ready = 0;         // Source1 not ready
+        cpu->op_queue.entries[i].source1_register = -1;     // Default source1 register
+        cpu->op_queue.entries[i].source1_value = 0;         // Default source1 value
+        cpu->op_queue.entries[i].source2_ready = 0;         // Source2 not ready
+        cpu->op_queue.entries[i].source2_register = -1;     // Default source2 register
+        cpu->op_queue.entries[i].source2_value = 0;         // Default source2 value
+        cpu->op_queue.entries[i].destination_register = -1; // Default destination register
+        cpu->op_queue.entries[i].load_store_queue_index = -1; // Default LSQ index
+    }
+}
+
+
 int add_op_queue_entry(APEX_CPU* cpu, OpQueueEntry* newOpEntry) {
     // Check if there is a free entry in the OpQueue
     if (cpu->op_queue.next_free_index < Op_QUEUE_SIZE) {
@@ -264,6 +285,45 @@ int update_instruction(APEX_CPU* cpu, int index) {
 
 
     return 0;
+}
+
+int check_phys_reg_free(APEX_CPU *cpu)
+{
+    for (int phys_index = 0; phys_index < NUM_PHYSICAL_REGS; phys_index++) {
+        if (!cpu->phys_reg[phys_index].status) {  //  status = 0 means free
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int search_free_phys_reg(APEX_CPU *cpu)
+{
+    for (int phys_index_free = 0; phys_index_free < NUM_PHYSICAL_REGS; phys_index_free++) {
+        if (!cpu->phys_reg[phys_index_free].status) {
+            return phys_index_free;
+        }
+    }
+    return -1;
+}
+
+int assign_phys_reg(APEX_CPU *cpu, int arch_reg)
+{
+        int free_phys_reg = search_free_phys_reg(cpu);
+        if (free_phys_reg != -1) {
+        cpu->phys_reg[free_phys_reg].status = 1;  // Mark as allocated
+        cpu->phys_reg[free_phys_reg].valid = 0;   // Mark as invalid
+        // Update rename table here if applicable
+        // For example: cpu->rename_table[ArchReg] = freePR;
+    }
+    return free_phys_reg;
+}
+/* Free a physical register */
+void deallocate_phys_reg(APEX_CPU *cpu, int ph_reg) {
+    if (ph_reg >= 0 && ph_reg < NUM_PHYSICAL_REGS) {
+        cpu->phys_reg[ph_reg].status = 0;  // Mark as free
+        cpu->phys_reg[ph_reg].valid = 0;   // Optionally reset valid bit
+    }
 }
 
 
@@ -437,7 +497,7 @@ APEX_decode(APEX_CPU *cpu)
             }
         }
 
-        if(check_op_queue_entry(cpu)){
+        if(check_op_queue_entry(cpu) && check_phys_reg_free(cpu)){
             OpQueueEntry* opqf = malloc(sizeof(*opqf));
 
             add_op_queue_entry(cpu,opqf);
@@ -1025,6 +1085,13 @@ APEX_cpu_init(const char *filename)
         free(cpu);
         return NULL;
     }
+
+    for (int i = 0; i < NUM_PHYSICAL_REGS; i++) {
+    cpu->phys_reg[i].status = 0;
+    cpu->phys_reg[i].valid = 0;
+    }
+    initialize_issue_queue(cpu);
+
 
     if (ENABLE_DEBUG_MESSAGES)
     {

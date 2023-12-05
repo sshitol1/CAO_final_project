@@ -76,6 +76,12 @@ typedef struct APEX_Reg_Status
     int valid;
 } APEX_Reg_Status;
 
+typedef struct {
+    int value;         // Value stored in the physical register
+    int valid;         // Flag to indicate if the register is valid
+    int status;      // Associated architectural register
+} PhysicalRegister;
+
 /* Model of APEX CPU */
 typedef struct APEX_CPU
 {
@@ -102,6 +108,10 @@ typedef struct APEX_CPU
     CPU_Stage execute;
     CPU_Stage memory;
     CPU_Stage writeback;
+
+    OpQueue opq;
+
+    PhysicalRegister phys_reg[NUM_PHYSICAL_REGS];
 } APEX_CPU;
 
 APEX_Instruction *create_code_memory(const char *filename, int *size);
